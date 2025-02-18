@@ -2,12 +2,12 @@ import os
 from openai import AsyncOpenAI
 import asyncio
 
+client = AsyncOpenAI(
+    base_url="https://api.siliconflow.cn/v1/",
+    api_key=os.environ.get("OPENAI_API_KEY"),
+)
 
 async def async_translate(text):
-    client = AsyncOpenAI(
-        base_url="https://api.siliconflow.cn/v1/",
-        api_key=os.environ.get("OPENAI_API_KEY"),
-    )
     completion = await client.chat.completions.create(
         model="Pro/deepseek-ai/DeepSeek-V3",
         messages=[
@@ -17,7 +17,7 @@ async def async_translate(text):
             },
             {
                 "role": "user",
-                "content": f"将以下的桌游描述文本翻译为中文，保留原始格式，无法翻译的保留原文，不要作任何解释: {text}",
+                "content": f"将以下的桌游描述文本翻译为中文，保留原始格式，不能翻译的保留原文。不要作任何解释说明：{text}",
             },
         ],
     )

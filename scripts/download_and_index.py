@@ -1,5 +1,6 @@
 import json
 import asyncio
+import os
 
 from mybgg.downloader import Downloader
 from mybgg.indexer import Indexer
@@ -25,11 +26,11 @@ def main(args):
 
     if not len(collection):
         assert False, "No games imported, is the boardgamegeek part of config.json correctly set?"
-        
-    description_dict = {game.id: game.description for game in collection}
-    description = asyncio.run(async_process_queries(description_dict))
-    for game in collection:
-        game.description = description[game.id]
+    if os.environ.get("OPENAI_API_KEY"):  
+        description_dict = {game.id: game.description for game in collection}
+        description = asyncio.run(async_process_queries(description_dict))
+        for game in collection:
+            game.description = description[game.id]
     
     if not args.no_indexing:
         hits_per_page = SETTINGS["algolia"].get("hits_per_page", 48)
