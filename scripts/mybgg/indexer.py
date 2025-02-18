@@ -22,17 +22,36 @@ class Indexer:
         index.set_settings({
             'searchableAttributes': [
                 'name',
+                'alternate_names',
+                'expansions.name',
+                'accessories.name',
                 'description',
+                'comment',
+                'wishlist_comment',
+                'designers.name',
+                'artists.name',
+                'publishers.name',
+                'categories',
+                'families.name',
+                'reimplements.name',
+                'reimplementedby.name',
+                'integrates.name',
+                'tags',
             ],
             'attributesForFaceting': [
-                'categories',
-                'mechanics',
+                'searchable(categories)',
+                'searchable(tags)',
+                'searchable(mechanics)',
+                'searchable(publishers.name)',
+                'searchable(designers.name)',
+                'searchable(artists.name)',
                 'players',
                 'weight',
                 'playing_time',
                 'min_age',
                 'searchable(previous_players)',
                 'numplays',
+                'searchable(year)',
             ],
             'customRanking': ['asc(name)'],
             'highlightPreTag': '<strong class="highlight">',
@@ -51,6 +70,7 @@ class Indexer:
                 mainIndex.name + '_rank_ascending',
                 mainIndex.name + '_numrated_descending',
                 mainIndex.name + '_numowned_descending',
+                mainIndex.name + '_lastmod_descending',
             ]
         })
 
@@ -62,6 +82,9 @@ class Indexer:
 
         replica_index = client.init_index(mainIndex.name + '_numowned_descending')
         replica_index.set_settings({'ranking': ['desc(numowned)']})
+
+        replica_index = client.init_index(mainIndex.name + '_lastmod_descending')
+        replica_index.set_settings({'ranking': ['desc(lastmodified)']})
 
     @staticmethod
     def todict(obj):
@@ -90,9 +113,17 @@ class Indexer:
                 "level1": num_no_plus,
                 "level2": f"{num_no_plus} > Recommended with {num}",
             },
+            "supported": {
+                "level1": num_no_plus,
+                "level2": f"{num_no_plus} > Supports with {num}",
+            },
             "expansion": {
                 "level1": num_no_plus,
                 "level2": f"{num_no_plus} > Expansion allows {num}",
+            },
+            "exp_supported": {
+                "level1": num_no_plus,
+                "level2": f"{num_no_plus} > ExpansionSupport allows {num}",
             },
         }
 
@@ -121,13 +152,23 @@ class Indexer:
         # Try to find a long paragraph from the beginning of the description
         description = self._pick_long_paragraph(description)
 
-        # Remove unnessesary spacing
+        # Remove unnecessary spacing
         description = re.sub(r"\s+", " ", description)
 
         # Cut at 700 characters, but not in the middle of a sentence
         description = self._smart_truncate(description)
 
         return description
+
+    @staticmethod
+    def _minimize_field(game, field, columns=["id", "name"]):
+        return [
+                {
+                    attribute: accessory[attribute]
+                    for attribute in columns
+                }
+                for accessory in game[field]
+            ]
 
     @staticmethod
     def _remove_game_name_prefix(expansion_name, game_name):
@@ -167,7 +208,7 @@ class Indexer:
     def add_objects(self, collection):
         games = [Indexer.todict(game) for game in collection]
         for i, game in enumerate(games):
-            if i != 0 and i % 25 == 0:
+            if i != 0 and i % 5 == 0:
                 print(f"Indexed {i} of {len(games)} games...")
 
             if game["image"]:
@@ -198,7 +239,7 @@ class Indexer:
 
                     game["color"] = f"{color_r}, {color_g}, {color_b}"
 
-            game["objectID"] = f"bgg{game['id']}"
+            game["objectID"] = f"bgg{game['collection_id']}"
 
             # Turn players tuple into a hierarchical facet
             game["players"] = [
@@ -222,11 +263,18 @@ class Indexer:
             # Limit the number of expansions to 10 to keep the size down
             game["has_more_expansions"] = len(game["expansions"]) > 10
             game["expansions"] = game["expansions"][:10]
+            game["accessories"] = self._minimize_field(game, "accessories")
+            game["reimplements"] = self._minimize_field(game, "reimplements")
+            game["reimplementedby"] = self._minimize_field(game, "reimplementedby")
+            game["designers"] = self._minimize_field(game, "designers")
+            game["publishers"] = self._minimize_field(game, "publishers")
+            game["artists"] = self._minimize_field(game, "artists")
 
             # Make sure description is not too long
             game["description"] = self._prepare_description(game["description"])
 
         self.index.save_objects(games)
+
 
     def delete_objects_not_in(self, collection):
         delete_filter = " AND ".join([f"id != {game.id}" for game in collection])

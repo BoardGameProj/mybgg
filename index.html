@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>All my boardgames</title>
+  <title>klingeling's Games</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=0.7">
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-  <script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.1.0/dist/algoliasearch-lite.umd.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.3.1/dist/instantsearch.production.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.css@7.1.1/themes/reset-min.css">
+  <script src="https://cdn.jsdelivr.net/npm/algoliasearch@4/dist/algoliasearch-lite.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4/dist/instantsearch.production.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.css@7/themes/reset-min.css">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,700&amp;display=swap">
 </head>
 <body>
   <header class="search">
-    <img class="logo" src="favicon.ico" height="36" width="36">
+    <a class="klingeling" href="https://github.com/klingeling/mybgg" target="_blank"><img class="logo" src="favicon.ico" height="36" width="36"></a>
     <div class="search-box" id="search-box"></div>
-    <label>Sort by:</label>
+    <label>排序方式:</label>
     <div class="sort-by" id="sort-by"></div>
     <div class="stats" id="stats"></div>
-    <a class="ref" href="https://www.algolia.com"><img src="search-by-algolia.png" width="130" height="18"></a>
+    <a class="ref" href="https://www.algolia.com" target="_blank"><img src="search-by-algolia.png" width="130" height="18"></a>
   </header>
   <article class="wrapper">
     <aside class="facets">
@@ -27,9 +27,15 @@
       <div class="facet" id="facet-weight" tabindex="0"></div>
       <div class="facet" id="facet-categories" tabindex="0"></div>
       <div class="facet" id="facet-mechanics" tabindex="0"></div>
-      <div class="facet" id="facet-min-age" tabindex="0"></div>
+      <!-- <div class="facet" id="facet-min-age" tabindex="0"></div> -->
       <div class="facet" id="facet-previous-players" tabindex="0"></div>
+      <div class="facet" id="facet-tags" tabindex="0"></div>
       <div class="facet" id="facet-numplays" tabindex="0"></div>
+      <div class="facet" id="facet-publishers" tabindex="0"></div>
+      <div class="facet" id="facet-designers" tabindex="0"></div>
+      <div class="facet" id="facet-artists" tabindex="0"></div>
+      <div class="facet" id="facet-age" tabindex="0"></div>
+      <div class="facet" id="facet-year" tabindex="0"></div>
       <div class="clear-all" id="clear-all"></div>
     </aside>
     <main class="results">
@@ -43,65 +49,183 @@
       <summary>
         <div class="game">
           <img src="{{{ image }}}" data-maincolor="{{{ color }}}" alt="{{{ name }}}">
+        <div style="position: absolute; bottom: 5px; right: 5px;">{{# tags_own }}✅{{/ tags_own }}
+        </div>
         </div>
       </summary>
       <div class="game-details">
         <h2 class="heading">
-          <a href="https://boardgamegeek.com/boardgame/{{{ id }}}">
+          <a href="https://boardgamegeek.com/boardgame/{{{ id }}}" target="_blank">
             {{# helpers.highlight }}{ "attribute": "name" }{{/ helpers.highlight }}
           </a>
         </h2>
+        {{# version_name }}
+        <h3>
+          <br/>
+          ( {{ version_name }} )
+        </h3>
+        {{/ version_name }}
         <dl class="properties">
           <div>
-            <dt>Players</dt>
+            <dt>BGG 排名</dt>
+            <dd>{{{ rank }}}</dd>
+          </div>
+          <div>
+            <dt>评分 (用户数)</dt>
+            <dd>{{ average_str }} ({{ usersrated }}) </dd>
+          </div>
+          <div>
+            <dt>玩家</dt>
             <dd>{{{ players_str }}}</dd>
           </div>
           <div>
-            <dt>Playing time</dt>
+            <dt>游戏时长</dt>
             <dd>{{ playing_time }}</dd>
           </div>
           <div>
-            <dt>Complexity</dt>
-            <dd>{{ weight }}</dd>
+            <dt>复杂度</dt>
+            <dd>{{ weight }} ({{weight_rating}})</dd>
           </div>
           <div>
-            <dt>Tags</dt>
-            <dd>{{ tags_str }}</dd>
+            <dt>年龄 (社区)</dt>
+            <dd>
+              {{# has_rec_age }} {{ min_age }}+ ({{ community_rec_age }}+ ) {{/ has_rec_age }}
+              {{^ has_rec_age }} {{ min_age }}+ (无投票) {{/ has_rec_age }}
+            </dd>
           </div>
           <div>
-            <dt>Categories</dt>
+            <dt>年份</dt>
+            <dd>{{ year }}</dd>
+          </div>
+          <div>
+            <dt>其他排名</dt>
+            <dd>
+              {{#other_ranks }}
+                <li>{{ friendlyname }} #{{ value }}</li>
+              {{/other_ranks }}
+            </dd>
+          </div>
+          <div>
+            <dt>标签</dt>
+            <dd>
+              {{# tags_str }}{{ tags_str }}{{/ tags_str }}
+              {{^ tags_str}}<em>无标签</em>{{/ tags_str }}
+            </dd>
+          </div>
+          <div>
+            <dt>分类</dt>
             <dd>
               {{# categories_str }}{{ categories_str }}{{/ categories_str }}
-              {{^ categories_str}}<em>No categories</em>{{/ categories_str }}
+              {{^ categories_str}}<em>无分类</em>{{/ categories_str }}
             </dd>
           </div>
           <div>
-            <dt>Mechanics</dt>
+            <dt>机制</dt>
             <dd>
               {{# mechanics_str }}{{ mechanics_str }}{{/ mechanics_str }}
-              {{^ mechanics_str}}<em>No mechanics</em>{{/ mechanics_str }}
+              {{^ mechanics_str}}<em>无机制</em>{{/ mechanics_str }}
             </dd>
           </div>
           <div>
-            <dt>Min age</dt>
-            <dd>{{ min_age }}</dd>
+            <dt>家族</dt>
+            <dd>
+              {{# families_str }}{{ families_str }}{{/ families_str }}
+              {{^ families_str }}<em>无家族</em>{{/ families_str }}
+            </dd>
+          </div>
+          <div>
+            <dt>设计师</dt>
+            <dd>
+              {{# designers }}<a href="https://boardgamegeek.com/boardgamedesigner/{{{ id }}}" target="_blank">{{ name }}</a><br/>{{/ designers }}
+              {{^ designers }}<em>未知设计师</em>{{/ designers }}
+            </dd>
           </div>
           {{# has_expansions }}
           <div class="expansions">
-            <dt>Expansions</dt>
+            <dt>扩展</dt>
             <dd>
               <ul>
                 {{# expansions }}
-                  <li><a href="https://boardgamegeek.com/boardgame/{{{ id }}}">{{ name }}</a></li>
+                  <li><a href="https://boardgamegeek.com/boardgame/{{{ id }}}" target="_blank">{{ name }}</a></li>
                 {{/ expansions }}
               </ul>
               {{# has_more_expansions }}
-                <a href="{{ has_more_expansions_url }}">... see all expansions</a>
+                <a href="{{ has_more_expansions_url }}" target="_blank">... 查看所有扩展</a>
               {{/ has_more_expansions }}
             </dd>
           </div>
           {{/ has_expansions }}
+          {{# has_contained }}
+          <div class="expansions">
+            <dt>包含</dt>
+            <dd>
+              <ul>
+                {{# contained }}
+                <li><a href="https://boardgamegeek.com/boardgame/{{{ id }}}" target="_blank">{{ name }}</a></li>
+                {{/ contained }}
+              </ul>
+            </dd>
+          </div>
+          {{/ has_contained }}
+          {{# has_accessories }}
+          <div class="expansions">
+            <dt>附件</dt>
+            <dd>
+              <ul>
+                {{# accessories }}
+                <li><a href="https://boardgamegeek.com/boardgame/{{{ id }}}" target="_blank">{{ name }}</a></li>
+                {{/ accessories }}
+              </ul>
+            </dd>
+          </div>
+          {{/ has_accessories }}
+          {{# has_integrates }}
+          <div class="expansions">
+            <dt>配合使用</dt>
+            <dd>
+              <ul>
+                {{# integrates }}
+                <li><a href="https://boardgamegeek.com/boardgame/{{{ id }}}" target="_blank">{{ name }}</a></li>
+                {{/ integrates }}
+              </ul>
+            </dd>
+          </div>
+          {{/ has_integrates }}
+          {{# has_reimplements }}
+          <div class="expansions">
+            <dt>衍生自</dt>
+            <dd>
+              <ul>
+                {{# reimplements }}
+                <li><a href="https://boardgamegeek.com/boardgame/{{{ id }}}" target="_blank">{{ name }}</a></li>
+                {{/ reimplements }}
+              </ul>
+            </dd>
+          </div>
+          {{/ has_reimplements }}
+          {{# has_reimplemented }}
+          <div class="expansions">
+            <dt>衍生作品</dt>
+            <dd>
+              <ul>
+                {{# reimplementedby }}
+                <li><a href="https://boardgamegeek.com/boardgame/{{{ id }}}" target="_blank">{{ name }}</a></li>
+                {{/ reimplementedby }}
+              </ul>
+            </dd>
+          </div>
+          {{/ has_reimplemented }}
         </dl>
+        {{# comment }}
+        <p class="description">
+          评论: {{ comment }}
+        </p>
+        {{/ comment }}
+        {{# wishlist_comment }}
+        <p class="description">
+          意愿清单评论: {{ wishlist_comment }}
+        </p>
+        {{/ wishlist_comment }}
         <p class="description">
           {{# helpers.highlight }}{ "attribute": "description" }{{/ helpers.highlight }}
         </p>
