@@ -46,6 +46,7 @@ body {
 .search {
     background: #F1F5F8;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     padding: 1em;
 }
@@ -53,7 +54,9 @@ body {
     padding: 1em;
 }
     .facets {
+        justify-content: center;
         display: flex;
+        flex-wrap: wrap;
         flex-direction: row;
         align-items: center;
         padding-bottom: 1em;
@@ -167,10 +170,11 @@ body {
         display: table;
     }
     .ais-Hits-list {
-        margin: 0;
+        margin: auto;
         padding: 0;
         list-style: none;
         display: grid;
+        max-width: 1500px;
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     }
         .ais-Hits-item {
@@ -197,8 +201,8 @@ body {
                 height: 130px;
             }
                 .game img {
-                    min-height: 100px;
-                    min-width: 100px;
+                    /* min-height: 100px;
+                    min-width: 100px; */
                     max-height: 100%;
                     max-width: 100%;
                     border-radius: 4px;
@@ -212,7 +216,7 @@ body {
                     left: 8px;
                     position: absolute;
                     top: 8px;
-                    width: 350px;
+                    width: 400px;
                     z-index: 1;
                 }
                     .game-details .heading {
@@ -344,6 +348,9 @@ body {
 .ais-Pagination {
     margin: 1em 0 2em;
 }
+    .ais-Pagination-list {
+        justify-content: center;
+    }
     .ais-Pagination-item a, .ais-Pagination-item span {
         padding: 5px 8px;
         margin-left: 5px;
