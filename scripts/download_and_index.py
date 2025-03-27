@@ -1,3 +1,4 @@
+import os
 import json
 import asyncio
 import os
@@ -8,7 +9,7 @@ from setup_logging import setup_logging
 from mybgg.translator import async_process_queries
 
 def main(args):
-    SETTINGS = json.load(open("config.json", "rb"))
+    SETTINGS = json.load(open(args.config, "rb"))
 
     downloader = Downloader(
         project_name=SETTINGS["project"]["name"],
@@ -81,6 +82,13 @@ if __name__ == '__main__':
         '--debug',
         action='store_true',
         help="打印调试信息，如发出的请求和收到的响应。"
+    )
+    parser.add_argument(
+        '--config',
+        type=str,
+        required=False,
+        default="config.json",
+        help="Path to the config file (default: config.json from the working directory)."
     )
 
     args = parser.parse_args()
